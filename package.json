@@ -1,0 +1,20 @@
+{
+  "name": "heic-to-webp-converter",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "archiver": "^7.0.1",
+    "express": "^5.1.0",
+    "heic-convert": "^2.1.0",
+    "multer": "^2.0.1",
+    "sharp": "^0.34.2",
+    "unzipper": "^0.12.3"
+  }
+}

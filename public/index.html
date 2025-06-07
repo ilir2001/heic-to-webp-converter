@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HEIC to WebP Converter</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center p-4">
+  <div class="bg-white rounded-xl shadow-lg p-8 max-w-md w-full">
+    <div class="text-center mb-8">
+      <h1 class="text-3xl font-bold text-gray-800 mb-2">HEIC to WebP Converter</h1>
+      <p class="text-gray-600">Convert your HEIC images to optimized WebP format</p>
+    </div>
+    
+    <form id="uploadForm" class="space-y-6">
+      <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors">
+        <input type="file" name="zipfile" accept=".zip" required 
+               class="hidden" id="fileInput" />
+        <label for="fileInput" class="cursor-pointer flex flex-col items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+          </svg>
+          <span class="text-sm font-medium text-gray-700" id="fileName">Drop your ZIP file or click to browse</span>
+          <span class="text-xs text-gray-500 mt-1">Only ZIP files containing HEIC images</span>
+        </label>
+      </div>
+      
+      <button type="submit" 
+              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors flex justify-center items-center">
+        <span>Convert Images</span>
+      </button>
+    </form>
+    
+    <div class="mt-8">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-sm font-medium text-gray-700">Progress</span>
+        <span class="text-sm text-gray-500" id="status">Waiting...</span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-2.5">
+        <div class="bg-blue-600 h-2.5 rounded-full transition-all duration-300" id="progressBar" style="width: 0%"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    const statusText = document.getElementById('status');
+    const progressBar = document.getElementById('progressBar');
+    const fileInput = document.getElementById('fileInput');
+    const fileNameDisplay = document.getElementById('fileName');
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length > 0) {
+        fileNameDisplay.textContent = fileInput.files[0].name;
+      } else {
+        fileNameDisplay.textContent = 'Drop your ZIP file or click to browse';
+      }
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!fileInput.files.length) return;
+      
+      statusText.textContent = 'Uploading...';
+      progressBar.style.width = '10%';
+
+      const formData = new FormData(form);
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/upload', true);
+      xhr.responseType = 'blob';
+
+      // Poll status
+      let progress = 10;
+      const interval = setInterval(async () => {
+        try {
+          const res = await fetch('/progress');
+          const { status } = await res.json();
+          statusText.textContent = status;
+          
+          if (status.includes('Converting')) {
+            const match = status.match(/Converting (\d+) of (\d+)/);
+            if (match) {
+              const [_, current, total] = match;
+              progress = 10 + Math.floor((current / total) * 70);
+            }
+          } else if (status.includes('Creating ZIP')) {
+            progress = 80;
+          } else if (status.includes('Done')) {
+            progress = 100;
+          }
+          
+          progressBar.style.width = `${progress}%`;
+        } catch (err) {
+          console.error('Error polling status:', err);
+        }
+      }, 1000);
+
+      xhr.onload = function () {
+        clearInterval(interval);
+        progress = 100;
+        progressBar.style.width = '100%';
+        
+        const blob = new Blob([xhr.response], { type: 'application/zip' });
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = 'converted_webp.zip';
+        link.click();
+        statusText.textContent = 'Download ready ✅';
+      };
+
+      xhr.onerror = function() {
+        clearInterval(interval);
+        statusText.textContent = 'Error occurred during conversion';
+      };
+
+      xhr.send(formData);
+    });
+  </script>
+</body>
+</html>
