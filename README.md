@@ -1,5 +1,3 @@
-Collecting workspace information# HEIC to WebP Converter
-
 A web application that allows users to easily convert HEIC images to the WebP format. Upload a ZIP file containing HEIC images, and receive a ZIP file with the converted WebP images.
 
 ## Features
