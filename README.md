@@ -12,22 +12,26 @@ A web application that allows users to easily convert HEIC images to the WebP fo
 ## Installation
 
 1. Clone this repository:
+
    ```bash
-   git clone https://github.com/yourusername/heic-to-webp-converter.git
+   git clone https://github.com/ilir2001/heic-to-webp-converter.git
    cd heic-to-webp-converter
    ```
 
 2. Install dependencies:
+
    ```bash
    npm install
    ```
 
 3. Start the server:
+
    ```bash
    node index.js
    ```
 
 4. Open your browser and navigate to:
+
    ```
    http://localhost:3000
    ```
