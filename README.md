@@ -4,7 +4,7 @@ A web application that allows users to easily convert HEIC images to the WebP fo
 
 - Simple and intuitive web interface
 - Batch conversion of multiple HEIC images
-- Real-time progress tracking
+- Real-time progress tracking using Server-Sent Events (SSE)
 - Automatic ZIP file handling for input and output
 - High-quality WebP conversion with optimized settings
 - Error handling for failed conversions
