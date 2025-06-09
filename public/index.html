@@ -70,34 +70,31 @@
       xhr.open('POST', '/upload', true);
       xhr.responseType = 'blob';
 
-      // Poll status
+      // Subscribe to progress updates using Server-Sent Events
       let progress = 10;
-      const interval = setInterval(async () => {
-        try {
-          const res = await fetch('/progress');
-          const { status } = await res.json();
-          statusText.textContent = status;
-          
-          if (status.includes('Converting')) {
-            const match = status.match(/Converting (\d+) of (\d+)/);
-            if (match) {
-              const [_, current, total] = match;
-              progress = 10 + Math.floor((current / total) * 70);
-            }
-          } else if (status.includes('Creating ZIP')) {
-            progress = 80;
-          } else if (status.includes('Done')) {
-            progress = 100;
+      const eventSource = new EventSource('/progress-sse');
+
+      eventSource.onmessage = (event) => {
+        const { status } = JSON.parse(event.data);
+        statusText.textContent = status;
+
+        if (status.includes('Converting')) {
+          const match = status.match(/Converting (\d+) of (\d+)/);
+          if (match) {
+            const [_, current, total] = match;
+            progress = 10 + Math.floor((current / total) * 70);
           }
-          
-          progressBar.style.width = `${progress}%`;
-        } catch (err) {
-          console.error('Error polling status:', err);
+        } else if (status.includes('Creating ZIP')) {
+          progress = 80;
+        } else if (status.includes('Done')) {
+          progress = 100;
         }
-      }, 1000);
+
+        progressBar.style.width = `${progress}%`;
+      };
 
       xhr.onload = function () {
-        clearInterval(interval);
+        eventSource.close();
         progress = 100;
         progressBar.style.width = '100%';
         
@@ -110,7 +107,7 @@
       };
 
       xhr.onerror = function() {
-        clearInterval(interval);
+        eventSource.close();
         statusText.textContent = 'Error occurred during conversion';
       };
 
