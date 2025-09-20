@@ -69,4 +69,5 @@ A web application that allows users to easily convert HEIC images to the WebP fo
 
 ## License
 
+!!!
 This project is licensed under the ISC License - see the package.json file for details.
